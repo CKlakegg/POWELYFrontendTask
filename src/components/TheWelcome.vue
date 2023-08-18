@@ -1,86 +1,115 @@
-<script setup lang="ts">
-import WelcomeItem from './WelcomeItem.vue'
-import DocumentationIcon from './icons/IconDocumentation.vue'
-import ToolingIcon from './icons/IconTooling.vue'
-import EcosystemIcon from './icons/IconEcosystem.vue'
-import CommunityIcon from './icons/IconCommunity.vue'
-import SupportIcon from './icons/IconSupport.vue'
+<template>
+  <div>
+    OTHER CAPEX AND OPEX COSTS
+    <form @submit.prevent="submitForm" class="form">
+      <div >
+        <label for="costName">New Cost Name</label>
+        <input v-model="newCostName" type="text" id="costName" class="input" placeholder="Enter Cost Name" required>
+      </div>
+      <div >
+        <label for="category">Category</label>
+        <select v-model="selectedCategory" id="category" class="input">
+          <option value="category1">Category 1</option>
+          <option value="category2">Category 2</option>
+        </select>
+      </div>
+      <div >
+        <label for="costValue">Cost</label>
+        <input v-model="newCostValue" type="text" id="costValue" class="input" placeholder="Cost" required>
+      </div>
+      <div >
+        <label for="frequency" class="text">Frequency</label>
+        <select v-model="selectedFrequency" id="frequency" class="input">
+          <option value="EUR">EUR</option>
+          <option value="USD">USD</option>
+        </select>
+      </div>
+      <button type="submit" class="add-button">{{ isEditing ? 'Update' : 'Add' }}</button>
+    </form>
+
+    <h4>FIXED COSTS (CAPEX)</h4>
+    <div class="backgroundCart">
+     
+      <ul>
+        <li v-for="(cost, index) in costList" :key="index">
+          <span>{{ cost.name }}</span>
+          <span>{{ cost.value }} {{ cost.currency }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import axios from 'axios'
+import { ref, computed } from 'vue'
+
+const newCostName = ref('');
+const newCostValue = ref('');
+const selectedCategory = ref('category1');
+const selectedFrequency = ref('EUR');
+const costList = ref([]);
+
+const editingIndex = ref(-1);
+
+const isEditing = computed(() => editingIndex.value !== -1);
+
+const submitForm = async () => {
+  if (newCostName.value.trim() === '' || newCostValue.value.trim() === '') {
+    return;
+  }
+
+  if (isEditing) {
+    costList.value[editingIndex.value] = {
+      name: newCostName.value,
+      value: newCostValue.value,
+      category: selectedCategory.value,
+      currency: selectedFrequency.value,
+    };
+    editingIndex.value = -1;
+  } else {
+    const postData = {
+      name: newCostName.value,
+      value: newCostValue.value,
+      category: selectedCategory.value,
+      currency: selectedFrequency.value,
+    };
+
+    costList.value.push(postData);
+  }
+
+  newCostName.value = '';
+  newCostValue.value = '';
+}
+
+const editCost = (index) => {
+  editingIndex.value = index;
+  newCostName.value = costList.value[index].name;
+  newCostValue.value = costList.value[index].value;
+  selectedCategory.value = costList.value[index].category;
+  selectedFrequency.value = costList.value[index].currency;
+}
 </script>
 
-<template>
-  <WelcomeItem>
-    <template #icon>
-      <DocumentationIcon />
-    </template>
-    <template #heading>Documentation</template>
+<style scoped>
+.text h3 {
+  text-align: center;
+  color: black;
+}
 
-    Vue’s
-    <a href="https://vuejs.org/" target="_blank" rel="noopener">official documentation</a>
-    provides you with all information you need to get started.
-  </WelcomeItem>
+.form {
+  background-color: var(--vt-c-white-soft);
+  padding: 30px;
+  display: flex;
+}
 
-  <WelcomeItem>
-    <template #icon>
-      <ToolingIcon />
-    </template>
-    <template #heading>Tooling</template>
+.background {
+  color: var(--background-form);
+}
 
-    This project is served and bundled with
-    <a href="https://vitejs.dev/guide/features.html" target="_blank" rel="noopener">Vite</a>. The
-    recommended IDE setup is
-    <a href="https://code.visualstudio.com/" target="_blank" rel="noopener">VSCode</a> +
-    <a href="https://github.com/johnsoncodehk/volar" target="_blank" rel="noopener">Volar</a>. If
-    you need to test your components and web pages, check out
-    <a href="https://www.cypress.io/" target="_blank" rel="noopener">Cypress</a> and
-    <a href="https://on.cypress.io/component" target="_blank">Cypress Component Testing</a>.
-
-    <br />
-
-    More instructions are available in <code>README.md</code>.
-  </WelcomeItem>
-
-  <WelcomeItem>
-    <template #icon>
-      <EcosystemIcon />
-    </template>
-    <template #heading>Ecosystem</template>
-
-    Get official tools and libraries for your project:
-    <a href="https://pinia.vuejs.org/" target="_blank" rel="noopener">Pinia</a>,
-    <a href="https://router.vuejs.org/" target="_blank" rel="noopener">Vue Router</a>,
-    <a href="https://test-utils.vuejs.org/" target="_blank" rel="noopener">Vue Test Utils</a>, and
-    <a href="https://github.com/vuejs/devtools" target="_blank" rel="noopener">Vue Dev Tools</a>. If
-    you need more resources, we suggest paying
-    <a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">Awesome Vue</a>
-    a visit.
-  </WelcomeItem>
-
-  <WelcomeItem>
-    <template #icon>
-      <CommunityIcon />
-    </template>
-    <template #heading>Community</template>
-
-    Got stuck? Ask your question on
-    <a href="https://chat.vuejs.org" target="_blank" rel="noopener">Vue Land</a>, our official
-    Discord server, or
-    <a href="https://stackoverflow.com/questions/tagged/vue.js" target="_blank" rel="noopener"
-      >StackOverflow</a
-    >. You should also subscribe to
-    <a href="https://news.vuejs.org" target="_blank" rel="noopener">our mailing list</a> and follow
-    the official
-    <a href="https://twitter.com/vuejs" target="_blank" rel="noopener">@vuejs</a>
-    twitter account for latest news in the Vue world.
-  </WelcomeItem>
-
-  <WelcomeItem>
-    <template #icon>
-      <SupportIcon />
-    </template>
-    <template #heading>Support Vue</template>
-
-    As an independent project, Vue relies on community backing for its sustainability. You can help
-    us by
-    <a href="https://vuejs.org/sponsor/" target="_blank" rel="noopener">becoming a sponsor</a>.
-  </WelcomeItem>
-</template>
+.backgroundCart {
+  margin-top: 20px;
+  padding-top: 20px;
+  background-color: white;
+}
+</style>
